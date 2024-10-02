@@ -41,7 +41,6 @@ else:
     st.sidebar.header("Select Device")
     device = st.sidebar.selectbox("Choose a device", ["device1", "device2", "device3", "device4", "device5", "device6"])
 
-    @st.cache_data
     def fetch_data(device):
         url = f"{BASE_URL}{device}/"
         response = requests.get(url)
