@@ -6,7 +6,6 @@ import folium
 from streamlit_folium import st_folium
 from dotenv import load_dotenv
 import os
-import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -48,46 +47,46 @@ else:
         else:
             return None
 
-    data_placeholder = st.empty()  # Placeholder for dynamic data
+    # Use Streamlit's autorefresh feature
+    st_autorefresh(interval=1000, key="data_refresh")  # Refreshes every second
 
-    while True:
-        # Fetch data for the selected device
-        data = fetch_data(device)
+    # Placeholder for dynamic data
+    data_placeholder = st.empty()
 
-        if data:
-            # If data is returned, process and display it
-            df = pd.DataFrame(data)
+    # Fetch data for the selected device
+    data = fetch_data(device)
 
-            data_placeholder.empty()  # Clear old data
+    if data:
+        # If data is returned, process and display it
+        df = pd.DataFrame(data)
 
-            data_placeholder.header(f"Latest Data for {device}")
-            latest_data = df.iloc[-1]
-            col1, col2, col3 = data_placeholder.columns(3)
-            col1.metric("Temperature (°C)", f"{latest_data['temperature']}")
-            col2.metric("Turbidity (NTU)", f"{latest_data['turbidity']}")
-            col3.metric("Conductivity (μS/cm)", f"{latest_data['conductivity']}")
+        data_placeholder.empty()  # Clear old data
 
-            data_placeholder.subheader("Location on Map")
-            m = folium.Map(location=[latest_data['latitude'], latest_data['longitude']], zoom_start=12)
-            folium.Marker(
-                [latest_data['latitude'], latest_data['longitude']],
-                popup=f"Device: {device}\nTemperature: {latest_data['temperature']}°C\nTimestamp: {latest_data['timestamp']}",
-            ).add_to(m)
-            st_folium(m, width=700, height=500)  # Display map using st_folium directly, not through the placeholder
+        data_placeholder.header(f"Latest Data for {device}")
+        latest_data = df.iloc[-1]
+        col1, col2, col3 = data_placeholder.columns(3)
+        col1.metric("Temperature (°C)", f"{latest_data['temperature']}")
+        col2.metric("Turbidity (NTU)", f"{latest_data['turbidity']}")
+        col3.metric("Conductivity (μS/cm)", f"{latest_data['conductivity']}")
 
-            st.sidebar.subheader("Device Data Table")
-            st.sidebar.dataframe(df)
+        data_placeholder.subheader("Location on Map")
+        m = folium.Map(location=[latest_data['latitude'], latest_data['longitude']], zoom_start=12)
+        folium.Marker(
+            [latest_data['latitude'], latest_data['longitude']],
+            popup=f"Device: {device}\nTemperature: {latest_data['temperature']}°C\nTimestamp: {latest_data['timestamp']}",
+        ).add_to(m)
+        st_folium(m, width=700, height=500)  # Display map using st_folium directly, not through the placeholder
 
-            data_placeholder.subheader("Device Readings Over Time")
-            fig = px.line(df, x='timestamp', y=['temperature', 'turbidity', 'conductivity'],
-                          labels={'timestamp': 'Timestamp', 'value': 'Reading'},
-                          title=f"Readings for {device} Over Time")
-            data_placeholder.plotly_chart(fig)
+        st.sidebar.subheader("Device Data Table")
+        st.sidebar.dataframe(df)
 
-        else:
-            # If no data is available, show "Device not activated yet"
-            data_placeholder.empty()  # Clear old data
-            data_placeholder.header(f"{device} is not activated yet.")
+        data_placeholder.subheader("Device Readings Over Time")
+        fig = px.line(df, x='timestamp', y=['temperature', 'turbidity', 'conductivity'],
+                      labels={'timestamp': 'Timestamp', 'value': 'Reading'},
+                      title=f"Readings for {device} Over Time")
+        data_placeholder.plotly_chart(fig)
 
-        time.sleep(1)
-        st.experimental_rerun()  # Refresh the page every second
+    else:
+        # If no data is available, show "Device not activated yet"
+        data_placeholder.empty()  # Clear old data
+        data_placeholder.header(f"{device} is not activated yet.")
