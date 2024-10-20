@@ -6,6 +6,7 @@ import folium
 from streamlit_folium import st_folium
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -23,8 +24,6 @@ def login():
         if username == USERNAME and password == PASSWORD:
             st.session_state["logged_in"] = True
             st.success("Successfully logged in!")
-            # Force the app to rerun without experimental_rerun()
-            st.session_state["run_page"] = True
         else:
             st.error("Invalid username or password")
 
@@ -49,37 +48,46 @@ else:
         else:
             return None
 
-    if device == "device1":
+    data_placeholder = st.empty()  # Placeholder for dynamic data
+
+    while True:
+        # Fetch data for the selected device
         data = fetch_data(device)
 
         if data:
+            # If data is returned, process and display it
             df = pd.DataFrame(data)
 
-            st.header(f"Latest Data for {device}")
+            data_placeholder.empty()  # Clear old data
+
+            data_placeholder.header(f"Latest Data for {device}")
             latest_data = df.iloc[-1]
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3 = data_placeholder.columns(3)
             col1.metric("Temperature (°C)", f"{latest_data['temperature']}")
             col2.metric("Turbidity (NTU)", f"{latest_data['turbidity']}")
             col3.metric("Conductivity (μS/cm)", f"{latest_data['conductivity']}")
 
-            st.subheader("Location on Map")
+            data_placeholder.subheader("Location on Map")
             m = folium.Map(location=[latest_data['latitude'], latest_data['longitude']], zoom_start=12)
             folium.Marker(
                 [latest_data['latitude'], latest_data['longitude']],
                 popup=f"Device: {device}\nTemperature: {latest_data['temperature']}°C\nTimestamp: {latest_data['timestamp']}",
             ).add_to(m)
-            st_folium(m, width=700, height=500)
+            data_placeholder.st_folium(m, width=700, height=500)
 
             st.sidebar.subheader("Device Data Table")
             st.sidebar.dataframe(df)
 
-            st.subheader("Device Readings Over Time")
+            data_placeholder.subheader("Device Readings Over Time")
             fig = px.line(df, x='timestamp', y=['temperature', 'turbidity', 'conductivity'],
                           labels={'timestamp': 'Timestamp', 'value': 'Reading'},
                           title=f"Readings for {device} Over Time")
-            st.plotly_chart(fig)
+            data_placeholder.plotly_chart(fig)
 
         else:
-            st.error("No data available for the selected device.")
-    else:
-        st.header(f"{device} is not active yet.")
+            # If no data is available, show "Device not activated yet"
+            data_placeholder.empty()  # Clear old data
+            data_placeholder.header(f"{device} is not activated yet.")
+
+        time.sleep(1)
+        st.experimental_rerun()  # Refresh the page every second
