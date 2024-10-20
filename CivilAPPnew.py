@@ -86,9 +86,9 @@ else:
 
     else:
         # If no data is available, show "Device not activated yet"
-        data_placeholder.empty()  # Clear old data
-        data_placeholder.header(f"{device} is not activated yet.")
+        #.empty()  # Clear old data
+        st.header(f"{device} is not activated yet.")
 
     # Add a small sleep to delay the refresh and prevent looping issues
-    time.sleep(1)
-    st.experimental_rerun()  # Refresh the page
+    #time.sleep(1)
+    #st.experimental_rerun()  # Refresh the page
