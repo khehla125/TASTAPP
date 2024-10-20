@@ -6,6 +6,7 @@ import folium
 from streamlit_folium import st_folium
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,9 +48,6 @@ else:
         else:
             return None
 
-    # Use Streamlit's autorefresh feature
-    st_autorefresh(interval=1000, key="data_refresh")  # Refreshes every second
-
     # Placeholder for dynamic data
     data_placeholder = st.empty()
 
@@ -90,3 +88,7 @@ else:
         # If no data is available, show "Device not activated yet"
         data_placeholder.empty()  # Clear old data
         data_placeholder.header(f"{device} is not activated yet.")
+
+    # Add a small sleep to delay the refresh and prevent looping issues
+    time.sleep(1)
+    st.experimental_rerun()  # Refresh the page
