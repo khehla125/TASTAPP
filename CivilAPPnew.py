@@ -73,7 +73,7 @@ else:
                 [latest_data['latitude'], latest_data['longitude']],
                 popup=f"Device: {device}\nTemperature: {latest_data['temperature']}°C\nTimestamp: {latest_data['timestamp']}",
             ).add_to(m)
-            data_placeholder.st_folium(m, width=700, height=500)
+            st_folium(m, width=700, height=500)  # Display map using st_folium directly, not through the placeholder
 
             st.sidebar.subheader("Device Data Table")
             st.sidebar.dataframe(df)
