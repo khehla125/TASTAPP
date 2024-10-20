@@ -49,7 +49,7 @@ else:
             return None
 
     # Placeholder for dynamic data
-    data_placeholder = st.empty()
+    #data_placeholder = st.empty()
 
     # Fetch data for the selected device
     data = fetch_data(device)
@@ -58,16 +58,16 @@ else:
         # If data is returned, process and display it
         df = pd.DataFrame(data)
 
-        data_placeholder.empty()  # Clear old data
+        #data_placeholder.empty()  # Clear old data
 
-        data_placeholder.header(f"Latest Data for {device}")
+        st.header(f"Latest Data for {device}")
         latest_data = df.iloc[-1]
-        col1, col2, col3 = data_placeholder.columns(3)
+        col1, col2, col3 = st.columns(3)
         col1.metric("Temperature (°C)", f"{latest_data['temperature']}")
         col2.metric("Turbidity (NTU)", f"{latest_data['turbidity']}")
         col3.metric("Conductivity (μS/cm)", f"{latest_data['conductivity']}")
 
-        data_placeholder.subheader("Location on Map")
+        st.subheader("Location on Map")
         m = folium.Map(location=[latest_data['latitude'], latest_data['longitude']], zoom_start=12)
         folium.Marker(
             [latest_data['latitude'], latest_data['longitude']],
@@ -78,11 +78,11 @@ else:
         st.sidebar.subheader("Device Data Table")
         st.sidebar.dataframe(df)
 
-        data_placeholder.subheader("Device Readings Over Time")
+        st.subheader("Device Readings Over Time")
         fig = px.line(df, x='timestamp', y=['temperature', 'turbidity', 'conductivity'],
                       labels={'timestamp': 'Timestamp', 'value': 'Reading'},
                       title=f"Readings for {device} Over Time")
-        data_placeholder.plotly_chart(fig)
+        st.plotly_chart(fig)
 
     else:
         # If no data is available, show "Device not activated yet"
