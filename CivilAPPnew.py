@@ -57,12 +57,12 @@ else:
         df = pd.DataFrame(data)
 
         # Convert timestamps to SA timezone
-        uk_tz = pytz.timezone("Europe/London")
         sa_tz = pytz.timezone("Africa/Johannesburg")
 
         def convert_to_sa_time(timestamp):
-            uk_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S%z")  # Adjust format if needed
-            sa_time = uk_time.astimezone(sa_tz)
+            utc_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            sa_time = utc_time.astimezone(sa_tz)
             return sa_time.strftime("%Y-%m-%d %H:%M:%S")
 
         df["timestamp"] = df["timestamp"].apply(convert_to_sa_time)
