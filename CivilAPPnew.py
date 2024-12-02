@@ -6,8 +6,7 @@ import folium
 from streamlit_folium import st_folium
 from dotenv import load_dotenv
 import os
-import pytz
-from datetime import datetime
+import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -49,6 +48,9 @@ else:
         else:
             return None
 
+    # Placeholder for dynamic data
+    #data_placeholder = st.empty()
+
     # Fetch data for the selected device
     data = fetch_data(device)
 
@@ -56,16 +58,7 @@ else:
         # If data is returned, process and display it
         df = pd.DataFrame(data)
 
-        # Convert timestamps to SA timezone
-        sa_tz = pytz.timezone("Africa/Johannesburg")
-
-        def convert_to_sa_time(timestamp):
-            utc_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-            utc_time = utc_time.replace(tzinfo=pytz.UTC)
-            sa_time = utc_time.astimezone(sa_tz)
-            return sa_time.strftime("%Y-%m-%d %H:%M:%S")
-
-        df["timestamp"] = df["timestamp"].apply(convert_to_sa_time)
+        #data_placeholder.empty()  # Clear old data
 
         st.header(f"Latest Data for {device}")
         latest_data = df.iloc[-1]
@@ -80,7 +73,7 @@ else:
             [latest_data['latitude'], latest_data['longitude']],
             popup=f"Device: {device}\nTemperature: {latest_data['temperature']}°C\nTimestamp: {latest_data['timestamp']}",
         ).add_to(m)
-        st_folium(m, width=700, height=500)
+        st_folium(m, width=700, height=500)  # Display map using st_folium directly, not through the placeholder
 
         st.sidebar.subheader("Device Data Table")
         st.sidebar.dataframe(df)
@@ -92,4 +85,10 @@ else:
         st.plotly_chart(fig)
 
     else:
+        # If no data is available, show "Device not activated yet"
+        #.empty()  # Clear old data
         st.header(f"{device} is not activated yet.")
+
+    # Add a small sleep to delay the refresh and prevent looping issues
+    #time.sleep(1)
+    #st.experimental_rerun()  # Refresh the page
